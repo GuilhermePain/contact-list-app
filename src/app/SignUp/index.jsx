@@ -1,42 +1,62 @@
-import Form from '../../components/Form'
-import TitleForm from '../../components/Form/TitleForm'
-import BodyForm from '../../components/Form/BodyForm'
-import Input from '../../components/Input'
-import Button from '../../components/Button'
-import { User } from 'lucide-react'
-import { Mail } from 'lucide-react';
-import { Lock } from 'lucide-react';
-import { Eye } from 'lucide-react';
-import api from '../../api/api'
-import imgContactList from '../../assets/svg/img-contact-list.svg';
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-useForm;
-import { signUpSchema } from '../../validators/signUp/index.js'
+import Form from '../../components/Form';
+import TitleForm from '../../components/Form/TitleForm';
+import BodyForm from '../../components/Form/BodyForm';
+import Input from '../../components/Input';
+import Button from '../../components/Button';
+import { User, Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import api from '../../api/api';
+import imgContactList from '../../assets/svg/img-contact-list.svg';;
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { signUpSchema } from '../../validators/signUp/index.js';
+import { showError, showSuccess } from '../../lib/toast/index.js';
+import { useState } from 'react';
+import { useNavigate } from 'react-router';
+import Cookies from 'js-cookie';
 
 const SignUp = () => {
+
+    const navigate = useNavigate();
+
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [loading, setLoading] = useState(false);
 
     const { register, handleSubmit, formState: { errors } } = useForm({
         resolver: zodResolver(signUpSchema)
     })
 
     const onSubmit = async (data) => {
-
         try {
-            const response = await api.post('/users', {
+            setLoading(true);
+            const signUpResponse = await api.post('/users', {
                 name: data.name,
                 email: data.email,
                 password: data.password
             });
 
-            alert('Cadastro realizado com sucesso!');
+            const signInResponse = await api.post('/auth/signin', {
+                email: data.email,
+                password: data.password
+            });
+
+            Cookies.set('token', signInResponse.data.access_token, {
+                secure: true
+            });
+
+            showSuccess('Conta criada com sucesso!');
+            navigate('/auth/signin');
+
         } catch (error) {
+            setLoading(false)
             if (error.response) {
-                alert(`Erro: ${error.response.data.message}`);
+                showError(error.response.data.message);
                 return;
             }
-            
-            alert('Erro ao conectar com o servidor.');
+
+            showError('Houve um erro interno, tente novamente.');
+        } finally {
+            setLoading(false);
         }
     }
 
@@ -59,6 +79,7 @@ const SignUp = () => {
                             placeholder={'Digite seu nome...'}
                             iconLeft={<User className='w-5 h-5 text-main-green' />}
                             {...register('name')}
+                            disabled={loading}
                         />
                         {errors.name && <p className="text-red-500 text-sm">{errors.name.message}</p>}
 
@@ -67,29 +88,43 @@ const SignUp = () => {
                             placeholder={'Digite seu email...'}
                             iconLeft={<Mail className='w-5 h-5 text-main-green' />}
                             {...register('email')}
+                            disabled={loading}
                         />
                         {errors.email && <p className="text-red-500 text-sm">{errors.email.message}</p>}
 
                         <Input
-                            type={'password'}
+                            type={showPassword ? 'text' : 'password'}
                             placeholder={'Digite sua senha...'}
                             iconLeft={<Lock className='w-5 h-5 text-main-green' />}
-                            iconRight={<Eye className='w-5 h-5 text-main-green' />}
+                            iconRight={
+                                showPassword ?
+                                    <EyeOff className='w-5 h-5 text-main-green' /> :
+                                    <Eye className='w-5 h-5 text-main-green' />
+                            }
                             {...register('password')}
+                            onClick={() => setShowPassword(!showPassword)}
+                            disabled={loading}
                         />
                         {errors.password && <p className="text-red-500 text-sm">{errors.password.message}</p>}
 
                         <Input
-                            type={'password'}
+                            type={showConfirmPassword ? 'text' : 'password'}
                             placeholder={'Confirme sua senha...'}
                             iconLeft={<Lock className='w-5 h-5 text-main-green' />}
-                            iconRight={<Eye className='w-5 h-5 text-main-green' />}
+                            iconRight={
+                                showConfirmPassword ?
+                                    <EyeOff className='w-5 h-5 text-main-green' /> :
+                                    <Eye className='w-5 h-5 text-main-green' />
+                            }
                             {...register('confirmPassword')}
+                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                            disabled={loading}
                         />
                         {errors.confirmPassword && <p className="text-red-500 text-sm">{errors.confirmPassword.message}</p>}
 
 
                         <Button
+                            disabled={loading}
                             text={'Criar'}
                         />
 

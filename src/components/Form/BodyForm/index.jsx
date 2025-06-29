@@ -2,7 +2,7 @@ import React from 'react'
 
 const BodyForm = ({ children }) => {
     return (
-        <div className='max-w-full h-full flex flex-col gap-4'>{children}</div>
+        <div className='w-full h-full flex flex-col gap-4'>{children}</div>
     )
 }
 

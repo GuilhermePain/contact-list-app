@@ -1,8 +1,8 @@
 import React from 'react'
 
-const Input = ({ type, placeholder, iconLeft, iconRight, onChange, value, ...rest }) => {
+const Input = ({ type, placeholder, iconLeft, iconRight, onClick, disabled, ...rest }) => {
     return (
-        <div className='flex items-center border-2 border-main-green rounded-md'>
+        <div className='w-full flex items-center border-2 border-main-green rounded-md'>
             {
                 iconLeft && (
                     <span className='flex items-center justify-center pl-2'>
@@ -11,16 +11,18 @@ const Input = ({ type, placeholder, iconLeft, iconRight, onChange, value, ...res
                 )
             }
             <input
-                onChange={onChange}
-                value={value}
-                className='p-2 flex-1 outline-none'
+                className='w-full p-2 outline-none'
                 type={type}
                 placeholder={placeholder}
                 {...rest}
+                disabled={disabled}
             />
             {
                 iconRight && (
-                    <span className='flex items-center justify-center pr-2'>
+                    <span
+                        onClick={onClick}
+                        className='flex items-center justify-center pr-2'
+                    >
                         {iconRight}
                     </span>
                 )
